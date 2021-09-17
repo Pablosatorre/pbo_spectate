@@ -1,0 +1,198 @@
+﻿@font-face 		{
+
+	font-family: 'ChaletLondonNineteenSixty';
+
+	src: url(https://runtime.fivem.net/temp/ChaletLondonNineteenSixty.otf?a);
+
+}
+
+@font-face 		{
+
+	font-family: 'MacOsFont';
+	
+	src: url('../fonts/NewHelvetica-Regular.otf');
+
+}
+
+* {
+
+	font-family: 'MacOsFont';
+
+	font-weight: normal;
+
+	padding: 0;
+
+	margin: 0;
+
+	box-sizing: border-box;
+
+}
+
+
+
+.spectate		{
+
+	font-weight: normal;
+
+	position: absolute;
+
+	border-radius: 5px;
+
+	background-color: #282828;
+
+	color: whitesmoke;
+		
+	min-width: 600px;
+
+	padding: 10px;
+	
+	top: 50%;
+	
+	left: 50%;
+	
+	transform: translate(-50%, -50%);
+	
+	display: none;
+
+}
+
+
+.spectate .header	{
+
+	border-radius: 5px;
+
+	color:gainsboro;
+	
+	background-color: #1e1e1e;
+	
+	padding: 10px;
+	
+	width: 100%;
+
+}
+
+.header h2	{
+
+	font-weight: normal;
+
+	display: inline-block;
+	
+	font-size: 20px;
+
+}
+
+.header #close	{
+
+	float: right;
+	
+	vertical-align: middle;
+	
+	position: relative;
+	
+	top: 4px;
+	
+	color: red;
+	
+	font-size: 20px;
+	
+	margin-left: 20px;
+	
+	cursor: pointer;
+
+}
+
+.header #minimize	{
+
+	float: right;
+	
+	vertical-align: middle;
+	
+	position: relative;
+	
+	top: 6px;
+
+	border-radius: 1000px;
+
+	height: fit-content;
+
+	width: fit-content;
+	
+	color: black;
+
+	background-color: orange;
+	
+	font-size: 16px;
+		
+	cursor: pointer;
+
+}
+
+.spectate .users	{
+
+	font-weight: normal;
+
+	padding: 5px;
+	
+	max-height: 700px;
+    
+	overflow: auto;
+
+}
+
+
+.user	{
+	
+	font-weight: normal;
+
+	padding: 6px 5px;
+	
+	font-size: 18px;
+
+}
+
+.user .user-name	{
+	
+	font-weight: normal;
+
+	margin-left: 15px;
+
+}
+
+
+
+.user .user-actions		{
+
+	font-weight: normal;
+
+	float: right;
+	
+	position: relative;
+	
+	bottom: 1px;
+
+}
+
+
+button		{
+
+	background-color: #2570ed;
+
+	color: whitesmoke;
+
+	padding: 6px 5px;
+
+	margin-left: 5px;
+
+	width: fit-content;
+
+	border-radius: 3px;
+
+	outline: none;
+
+	border: none;
+
+	cursor: pointer;
+
+	min-width: 49px;
+
+}
