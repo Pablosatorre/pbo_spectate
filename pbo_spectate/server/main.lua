@@ -14,7 +14,7 @@ TriggerEvent(
     end
 )
 
-PBO.RegisterServerCallback('mdn_spectate:checkAdmin', function(source, cb)
+PBO.RegisterServerCallback('pbo_spectate:checkAdmin', function(source, cb)
     local xPlayer = PBO.GetPlayerFromId(source)
     local g = xPlayer.getGroup()
     cb(g)
