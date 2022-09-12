@@ -246,7 +246,7 @@ RegisterKeyMapping("menuspectate", "Abre el Menu de Spectear (Only Staffs)", "ke
 RegisterCommand(
     "menuspectate",
     function(source)
-        PBO.TriggerServerCallback('mdn_spectate:checkAdmin', function(x)
+        PBO.TriggerServerCallback('pbo_spectate:checkAdmin', function(x)
             if x == "admin" or x == "superadmin" or x == "soporte" then
                 print("Spectate Abierto.")
                 TriggerEvent("pbo_spectate:spectate")
