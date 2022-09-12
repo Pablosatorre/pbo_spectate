@@ -4,8 +4,8 @@
 ![pre](https://media.discordapp.net/attachments/907726012031320153/1018913257081274508/unknown.png?width=258&height=429)
 
 **ENG** |
-ESX spectate optimized and ui redesign, [F11 to open]
-press [G] to open player control menu, you can see:
+ESX spectate optimized and ui redesign, [F11 to open main menu]
+press [G] to open player control menu (with a player selected), you can see:
 
 - Ic name,
 - Money,
@@ -25,8 +25,8 @@ start pbo_spectate in your server.cfg
 ______________________________________________________________________
 
 **ESP** |
-Spectate de esx optimizado y con rediseño de ui, [F11 para abrir]
-presiona [G] para abrir el menu de control de jugador, podras ver: 
+Spectate de esx optimizado y con rediseño de ui, [F11 para abrir el menu principal]
+presiona [G] para abrir el menu de control de jugador (con un jugador selecionado), podras ver: 
 
 - Nombre ic
 - Dinero en mano,
