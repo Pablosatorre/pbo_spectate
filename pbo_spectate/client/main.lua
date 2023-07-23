@@ -1,13 +1,13 @@
-PBO = nil
+pbo = nil
 s = 0
 
 Citizen.CreateThread(
     function()
-        while PBO == nil do
+        while pbo == nil do
             TriggerEvent(
                 "esx:getSharedObject",
                 function(obj)
-                    PBO = obj
+                    pbo = obj
                 end
             )
             Citizen.Wait(s)
@@ -25,6 +25,7 @@ local cam = nil
 local PlayerDate = {}
 local ShowInfos = false
 local group
+local players = {}
 
 function polar3DToWorld3D(entityPosition, radius, polarAngleDeg, azimuthAngleDeg)
     local polarAngleRad = polarAngleDeg * math.pi / 180.0
@@ -40,17 +41,14 @@ function polar3DToWorld3D(entityPosition, radius, polarAngleDeg, azimuthAngleDeg
 end
 
 function spectate(target)
-    PBO.TriggerServerCallback(
+    pbo.TriggerServerCallback(
         "esx:getPlayerData",
         function(player)
             if not InSpectatorMode then
-                LastPosition = GetEntityCoords(GetPlayerPed(-1))
+                LastPosition = GetEntityCoords(PlayerPedId())
             end
 
-            local playerPed = GetPlayerPed(-1)
-
-            SetEntityCollision(playerPed, false, false)
-            SetEntityVisible(playerPed, false)
+            local playerPed = PlayerPedId()
 
             PlayerData = player
             if ShowInfos then
@@ -62,55 +60,100 @@ function spectate(target)
                 )
             end
 
-            Citizen.CreateThread(
-                function()
-                    if not DoesCamExist(cam) then
-                        cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
-                    end
+            pbo.TriggerServerCallback('spectate:requestPlayerCoords', function(coords)
+                -- Citizen.CreateThread(function()
+                --     if not DoesCamExist(cam) then
+                --         cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
+                --     end
 
-                    SetCamActive(cam, true)
-                    RenderScriptCams(true, false, 0, true, true)
+                --     SetCamActive(cam, true)
+                --     RenderScriptCams(true, false, 0, true, true)
 
-                    InSpectatorMode = true
-                    TargetSpectate = target
-                end
-            )
+                --     InSpectatorMode = true
+                --     TargetSpectate = target
+                -- end)
+
+                CreateThread(getPlayerInformation)
+
+                InSpectatorMode = true
+                TargetSpectate = target
+
+                RequestCollisionAtCoord(coords)
+                SetEntityVisible(playerPed, false)
+                SetEntityCollision(playerPed, false, false)
+                SetEntityCoords(playerPed, coords + vec3(0, 0, 10))
+                FreezeEntityPosition(playerPed, true)
+                Wait(1500)
+                SetEntityCoords(playerPed, coords - vec3(0, 0, 10))
+
+                local targetPed = GetPlayerPed(GetPlayerFromServerId(target))
+                NetworkSetInSpectatorMode(true, targetPed)
+            end, target)
         end,
         target
     )
 end
 
+function getPlayerInformation()
+    while InSpectatorMode do
+        Wait(0)
+        local targetId = GetPlayerFromServerId(TargetSpectate)
+        local targetPed = GetPlayerPed(targetId)
+        
+        if IsControlPressed(2, 47) then
+            OpenAdminActionMenu(targetId)
+        end
+
+        local text = {}
+        local targetGod = GetPlayerInvincible(targetId)
+
+        if targetGod then
+            table.insert(text, "Godmode: ~r~Encontrado~w~")
+        else
+            table.insert(text, "Godmode: ~g~No lleva Godmode.~w~")
+        end
+
+        if not CanPedRagdoll(targetPed) and not IsPedInAnyVehicle(targetPed, false) and (GetPedParachuteState(targetPed) == -1 or GetPedParachuteState(targetPed) == 0) and not IsPedInParachuteFreeFall(targetPed) then
+            table.insert(text, "~r~Anti-Ragdoll~w~")
+        end
+
+        table.insert(text,"Vida" .. ": " .. GetEntityHealth(targetPed) .. "/" .. GetEntityMaxHealth(targetPed))
+        table.insert(text, "Escudo" .. ": " .. GetPedArmour(targetPed))
+
+        for i, theText in pairs(text) do
+            SetTextFont(0)
+            SetTextProportional(1)
+            SetTextScale(0.0, 0.30)
+            SetTextDropshadow(0, 0, 0, 0, 255)
+            SetTextEdge(1, 0, 0, 0, 255)
+            SetTextDropShadow()
+            SetTextOutline()
+            SetTextEntry("STRING")
+            AddTextComponentString(theText)
+            EndTextCommandDisplayText(0.3, 0.7 + (i / 30))
+        end
+    end
+end
+
 function resetNormalCamera()
     InSpectatorMode = false
     TargetSpectate = nil
-    local playerPed = GetPlayerPed(-1)
 
-    SetCamActive(cam, false)
-    RenderScriptCams(false, false, 0, true, true)
+    local playerPed = PlayerPedId()
 
-    SetEntityCollision(playerPed, true, true)
-    SetEntityVisible(playerPed, true)
-    SetEntityCoords(playerPed, LastPosition.x, LastPosition.y, LastPosition.z)
-end
-
-function getPlayersList()
-    local players = PBO.Game.GetPlayers()
-    local data = {}
-
-    for i = 1, #players, 1 do
-        local _data = {
-            id = GetPlayerServerId(players[i]),
-            name = GetPlayerName(players[i])
-        }
-        table.insert(data, _data)
+    if LastPosition ~= nil then
+        RequestCollisionAtCoord(LastPosition)
+        NetworkSetInSpectatorMode(false, playerPed)
+        FreezeEntityPosition(playerPed, false)
+        SetEntityCoords(playerPed, LastPosition)
+        SetEntityVisible(playerPed, true)
+        SetEntityCollision(playerPed, true, true)
     end
-
-    return data
 end
 
 function OpenAdminActionMenu(player)
-    PBO.TriggerServerCallback(
-        "pbo_spectate:getOtherPlayerData",
+    pbo.TriggerServerCallback(
+        "pbo_spectateplayers:getOtherPlayerData",
         function(data)
             local jobLabel = nil
             local sexLabel = nil
@@ -171,13 +214,13 @@ function OpenAdminActionMenu(player)
             end
 
             if data.name ~= nil then
-                idLabel = "Steam ID : " .. data.name
+                idLabel = "Steam ID : " ..data.name
             else
                 idLabel = "Steam ID : Unknown"
             end
 
             local elements = {
-                {label = "Steam: " .. data.firstname .. " " .. data.lastname, value = nil},
+                {label = "Nombre: " .. data.charName, value = nil},
                 {label = "Dinero: " .. data.money, value = nil},
                 {label = "Banco: " .. data.bank, value = nil},
                 {label = "Dinero Negro: " .. blackMoney, value = nil, itemType = "item_account", amount = blackMoney},
@@ -207,7 +250,7 @@ function OpenAdminActionMenu(player)
                 table.insert(
                     elements,
                     {
-                        label = PBO.GetWeaponLabel(data.weapons[i].name),
+                        label = pbo.GetWeaponLabel(data.weapons[i].name),
                         value = nil,
                         itemType = "item_weapon",
                         amount = data.ammo
@@ -222,7 +265,7 @@ function OpenAdminActionMenu(player)
                 end
             end
 
-            PBO.UI.Menu.Open(
+            pbo.UI.Menu.Open(
                 "default",
                 GetCurrentResourceName(),
                 "citizen_interaction",
@@ -246,12 +289,12 @@ RegisterKeyMapping("menuspectate", "Abre el Menu de Spectear (Only Staffs)", "ke
 RegisterCommand(
     "menuspectate",
     function(source)
-        PBO.TriggerServerCallback('pbo_spectate:checkAdmin', function(x)
-            if x == "admin" or x == "superadmin" or x == "soporte" then
+        pbo.TriggerServerCallback('mdn_spectate:checkAdmin', function(x)
+            if x == "admin" or x == "mod" or x == "soporte" then
                 print("Spectate Abierto.")
-                TriggerEvent("pbo_spectate:spectate")
+                TriggerEvent("pbo_spectateplayers:spectate")
             else
-                PBO.ShowNotification('~r~No eres admin')
+                pbo.ShowNotification('~r~No eres admin')
             end
         end)
     end
@@ -266,18 +309,23 @@ AddEventHandler(
     end
 )
 
-RegisterNetEvent("pbo_spectate:spectate")
+RegisterNetEvent("pbo_spectateplayers:spectate")
 AddEventHandler(
-    "pbo_spectate:spectate",
+    "pbo_spectateplayers:spectate",
     function()
         SetNuiFocus(true, true)
 
-        SendNUIMessage(
-            {
-                type = "show",
-                data = getPlayersList(),
-                player = GetPlayerServerId(PlayerId())
-            }
+        pbo.TriggerServerCallback(
+            "pbo_spectateplayers:getPlayersList",
+            function(data)
+                SendNUIMessage(
+                    {
+                        type = "show",
+                        data = data,
+                        player = GetPlayerServerId(PlayerId())
+                    }
+                )
+            end
         )
     end
 )
@@ -318,99 +366,7 @@ RegisterNUICallback(
     "kick",
     function(data, cb)
         SetNuiFocus(false)
-        TriggerServerEvent("pbo_spectate:kick", data.id, data.reason)
-        TriggerEvent("pbo_spectate:spectate")
-    end
-)
-
-Citizen.CreateThread(
-    function()
-        while true do
-            Citizen.Wait(s)
-
-            if InSpectatorMode then
-                local targetPlayerId = GetPlayerFromServerId(TargetSpectate)
-                local playerPed = GetPlayerPed(-1)
-                local targetPed = GetPlayerPed(targetPlayerId)
-                local coords = GetEntityCoords(targetPed)
-
-                for i = 0, 32, 1 do
-                    if i ~= PlayerId() then
-                        local otherPlayerPed = GetPlayerPed(i)
-                        SetEntityNoCollisionEntity(playerPed, otherPlayerPed, true)
-                        SetEntityVisible(playerPed, false)
-                    end
-                end
-
-                if IsControlPressed(2, 241) then
-                    radius = radius + 2.0
-                end
-
-                if IsControlPressed(2, 242) then
-                    radius = radius - 2.0
-                end
-
-                if radius > -1 then
-                    radius = -1
-                end
-
-                local xMagnitude = GetDisabledControlNormal(0, 1)
-                local yMagnitude = GetDisabledControlNormal(0, 2)
-
-                polarAngleDeg = polarAngleDeg + xMagnitude * 10
-
-                if polarAngleDeg >= 360 then
-                    polarAngleDeg = 0
-                end
-
-                azimuthAngleDeg = azimuthAngleDeg + yMagnitude * 10
-
-                if azimuthAngleDeg >= 360 then
-                    azimuthAngleDeg = 0
-                end
-
-                local nextCamLocation = polar3DToWorld3D(coords, radius, polarAngleDeg, azimuthAngleDeg)
-
-                SetCamCoord(cam, nextCamLocation.x, nextCamLocation.y, nextCamLocation.z)
-                PointCamAtEntity(cam, targetPed)
-                SetEntityCoords(playerPed, coords.x, coords.y, coords.z + 10)
-
-                if IsControlPressed(2, 47) then
-                    OpenAdminActionMenu(targetPlayerId)
-                end
-
-                local text = {}
-                -- Cheques de Hacks
-                local targetGod = GetPlayerInvincible(targetPlayerId)
-                if targetGod then
-                    table.insert(text, "Godmode: ~r~Encontrado~w~")
-                else
-                    table.insert(text, "Godmode: ~g~No lleva Godmode.~w~")
-                end
-                if
-                    not CanPedRagdoll(targetPed) and not IsPedInAnyVehicle(targetPed, false) and
-                        (GetPedParachuteState(targetPed) == -1 or GetPedParachuteState(targetPed) == 0) and
-                        not IsPedInParachuteFreeFall(targetPed)
-                 then
-                    table.insert(text, "~r~Anti-Ragdoll~w~")
-                end
-                -- Informacion de la Vida
-                table.insert(text,"Vida" .. ": " .. GetEntityHealth(targetPed) .. "/" .. GetEntityMaxHealth(targetPed))
-                table.insert(text, "Escudo" .. ": " .. GetPedArmour(targetPed))
-
-                for i, theText in pairs(text) do
-                    SetTextFont(0)
-                    SetTextProportional(1)
-                    SetTextScale(0.0, 0.30)
-                    SetTextDropshadow(0, 0, 0, 0, 255)
-                    SetTextEdge(1, 0, 0, 0, 255)
-                    SetTextDropShadow()
-                    SetTextOutline()
-                    SetTextEntry("STRING")
-                    AddTextComponentString(theText)
-                    EndTextCommandDisplayText(0.3, 0.7 + (i / 30))
-                end
-            end
-        end
+        TriggerServerEvent("pbo_spectateplayers:kick", data.id, data.reason)
+        TriggerEvent("pbo_spectateplayers:spectate")
     end
 )
