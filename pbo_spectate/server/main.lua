@@ -1,11 +1,4 @@
 pbo = nil
-print(
-    Config.Prename ..
-        ' '..
-    Config.Script ..
-        ' '..
-    Config.PrintConsole
-)
 scriptname = "^1SPECTATE^7: "
 TriggerEvent(
     "esx:getSharedObject",
