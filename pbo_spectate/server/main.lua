@@ -1,5 +1,6 @@
-pbo = nil
+ESX = exports["es_extended"]:getSharedObject()
 scriptname = "^1SPECTATE^7: "
+
 TriggerEvent(
     "esx:getSharedObject",
     function(obj)
@@ -7,8 +8,8 @@ TriggerEvent(
     end
 )
 
-pbo.RegisterServerCallback('mdn_spectate:checkAdmin', function(source, cb)
-    local xPlayer = pbo.GetPlayerFromId(source)
+ESX.RegisterServerCallback('pbo_spectate:checkAdmin', function(source, cb)
+    local xPlayer = ESX.GetPlayerFromId(source)
     local g = xPlayer.getGroup()
     cb(g)
 end)
@@ -25,10 +26,10 @@ TriggerEvent(
     end
 )
 
-pbo.RegisterServerCallback(
+ESX.RegisterServerCallback(
     "pbo_spectateplayers:getPlayerData",
     function(source, cb, id)
-        local xPlayer = pbo.GetPlayerFromId(id)
+        local xPlayer = ESX.GetPlayerFromId(id)
         if xPlayer ~= nil then
             cb(xPlayer)
         end
@@ -39,7 +40,7 @@ RegisterServerEvent("pbo_spectateplayers:kick")
 AddEventHandler(
     "pbo_spectateplayers:kick",
     function(target, msg)
-        local xPlayer = pbo.GetPlayerFromId(source)
+        local xPlayer = ESX.GetPlayerFromId(source)
 
         if xPlayer.getGroup() ~= "user" then
             DropPlayer(target, msg)
@@ -50,8 +51,8 @@ AddEventHandler(
     end
 )
 
-pbo.RegisterServerCallback("pbo_spectateplayers:getOtherPlayerData", function(source, cb, target)
-    local xPlayer = pbo.GetPlayerFromId(target)
+ESX.RegisterServerCallback("pbo_spectateplayers:getOtherPlayerData", function(source, cb, target)
+    local xPlayer = ESX.GetPlayerFromId(target)
 
     if xPlayer then
         local result = MySQL.Sync.fetchAll("SELECT * FROM users WHERE identifier = @identifier", {
@@ -87,12 +88,12 @@ pbo.RegisterServerCallback("pbo_spectateplayers:getOtherPlayerData", function(so
     end
 end)
 
-pbo.RegisterServerCallback('pbo_spectateplayers:getPlayersList', function(source, cb)
-    local xPlayers = pbo.GetPlayers()
+ESX.RegisterServerCallback('pbo_spectateplayers:getPlayersList', function(source, cb)
+    local xPlayers = ESX.GetPlayers()
     local players = {}
 
     for i = 1, #xPlayers, 1 do
-        local xPlayer = pbo.GetPlayerFromId(xPlayers[i])
+        local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
 
         table.insert(players, {
             id = xPlayer.source,
@@ -103,8 +104,8 @@ pbo.RegisterServerCallback('pbo_spectateplayers:getPlayersList', function(source
     cb(players)
 end)
 
-pbo.RegisterServerCallback('spectate:requestPlayerCoords', function(source, cb, target)
-    local xPlayer = pbo.GetPlayerFromId(source)
+ESX.RegisterServerCallback('spectate:requestPlayerCoords', function(source, cb, target)
+    local xPlayer = ESX.GetPlayerFromId(source)
     local coords = GetEntityCoords(GetPlayerPed(target))
 
     if xPlayer.getGroup() == 'user' then
