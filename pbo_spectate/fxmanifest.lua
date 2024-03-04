@@ -1,9 +1,6 @@
-shared_script '@regreso_core/ai_module_fg-obfuscated.lua'
-shared_script '@regreso_core/ai_module_fg-obfuscated.js'
- 
- 
 fx_version 'adamant'
 game 'gta5'
+author 'pabio'
 version '1.2.0'
 ui_page ('html/index.html')
 files (
