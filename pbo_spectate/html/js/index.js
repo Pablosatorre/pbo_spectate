@@ -21,7 +21,7 @@
 
         let target = $(this).data('kick');
 
-        let reason = prompt("Motivo de la expulsion", "Has Sido kickeado de LaJerarquiaRP");
+        let reason = prompt("Motivo de la expulsion", "Has Sido kickeado del servidor");
 
         if (reason == null || reason == "") {
             alert("Falta Motivo de la expulsion")
