@@ -1,19 +1,4 @@
-pbo = nil
-s = 0
-
-Citizen.CreateThread(
-    function()
-        while pbo == nil do
-            TriggerEvent(
-                "esx:getSharedObject",
-                function(obj)
-                    pbo = obj
-                end
-            )
-            Citizen.Wait(s)
-        end
-    end
-)
+ESX = exports["es_extended"]:getSharedObject()
 
 local InSpectatorMode = false
 local TargetSpectate = nil
@@ -41,7 +26,7 @@ function polar3DToWorld3D(entityPosition, radius, polarAngleDeg, azimuthAngleDeg
 end
 
 function spectate(target)
-    pbo.TriggerServerCallback(
+    ESX.TriggerServerCallback(
         "esx:getPlayerData",
         function(player)
             if not InSpectatorMode then
@@ -60,7 +45,7 @@ function spectate(target)
                 )
             end
 
-            pbo.TriggerServerCallback('spectate:requestPlayerCoords', function(coords)
+            ESX.TriggerServerCallback('spectate:requestPlayerCoords', function(coords)
                 -- Citizen.CreateThread(function()
                 --     if not DoesCamExist(cam) then
                 --         cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
@@ -152,7 +137,7 @@ function resetNormalCamera()
 end
 
 function OpenAdminActionMenu(player)
-    pbo.TriggerServerCallback(
+    ESX.TriggerServerCallback(
         "pbo_spectateplayers:getOtherPlayerData",
         function(data)
             local jobLabel = nil
@@ -250,7 +235,7 @@ function OpenAdminActionMenu(player)
                 table.insert(
                     elements,
                     {
-                        label = pbo.GetWeaponLabel(data.weapons[i].name),
+                        label = ESX.GetWeaponLabel(data.weapons[i].name),
                         value = nil,
                         itemType = "item_weapon",
                         amount = data.ammo
@@ -265,7 +250,7 @@ function OpenAdminActionMenu(player)
                 end
             end
 
-            pbo.UI.Menu.Open(
+            ESX.UI.Menu.Open(
                 "default",
                 GetCurrentResourceName(),
                 "citizen_interaction",
@@ -289,23 +274,14 @@ RegisterKeyMapping("menuspectate", "Abre el Menu de Spectear (Only Staffs)", "ke
 RegisterCommand(
     "menuspectate",
     function(source)
-        pbo.TriggerServerCallback('mdn_spectate:checkAdmin', function(x)
+        ESX.TriggerServerCallback('pbo_spectate:checkAdmin', function(x)
             if x == "admin" or x == "mod" or x == "soporte" then
                 print("Spectate Abierto.")
                 TriggerEvent("pbo_spectateplayers:spectate")
             else
-                pbo.ShowNotification('~r~No eres admin')
+                ESX.ShowNotification('~r~No eres admin')
             end
         end)
-    end
-)
-
-RegisterNetEvent("es_admin:setGroup")
-AddEventHandler(
-    "es_admin:setGroup",
-    function(g)
-        print("Admin puesto " .. g)
-        group = g
     end
 )
 
@@ -315,7 +291,7 @@ AddEventHandler(
     function()
         SetNuiFocus(true, true)
 
-        pbo.TriggerServerCallback(
+        ESX.TriggerServerCallback(
             "pbo_spectateplayers:getPlayersList",
             function(data)
                 SendNUIMessage(
